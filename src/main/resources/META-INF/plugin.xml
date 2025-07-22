@@ -9,7 +9,15 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.gtcbaba.gtcplugin.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.gtcbaba.gtcplugin.startup.MyProjectActivity" />
+        <toolWindow canCloseContents="true"
+                    icon="/icons/favicon.svg"
+                    factoryClass="com.github.gtcbaba.gtcplugin.toolWindow.MyToolWindowFactory" id="码小保">
+        </toolWindow>
     </extensions>
+
+    <actions>
+        <action id="LoginAction" class="com.github.gtcbaba.gtcplugin.actions.LoginAction" text="登录" description="登录验证">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
