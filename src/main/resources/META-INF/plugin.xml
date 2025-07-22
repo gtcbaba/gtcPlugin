@@ -13,11 +13,18 @@
                     icon="/icons/favicon.svg"
                     factoryClass="com.github.gtcbaba.gtcplugin.toolWindow.MyToolWindowFactory" id="码小保">
         </toolWindow>
+
+        <applicationService serviceImplementation="com.github.gtcbaba.gtcplugin.config.GlobalState"/>
     </extensions>
 
-    <actions>
-        <action id="LoginAction" class="com.github.gtcbaba.gtcplugin.actions.LoginAction" text="登录" description="登录验证">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-        </action>
-    </actions>
+    <applicationListeners>
+        <listener class="com.github.gtcbaba.gtcplugin.listeners.ApplicationLifecycleListener"
+                  topic="com.intellij.ide.AppLifecycleListener"/>
+    </applicationListeners>
+
+<!--    <actions>-->
+<!--        <action id="LoginAction" class="com.github.gtcbaba.gtcplugin.actions.LoginAction" text="登录" description="登录验证">-->
+<!--            <add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
+<!--        </action>-->
+<!--    </actions>-->
 </idea-plugin>
