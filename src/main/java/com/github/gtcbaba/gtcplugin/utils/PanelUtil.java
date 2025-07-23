@@ -123,10 +123,10 @@ public class PanelUtil {
         table.getColumnModel().getColumn(columnIndex).setCellRenderer(categoryRenderer);
 
         // 设置列宽为0，使列存在但不可见
-        TableColumn column = table.getColumnModel().getColumn(0);
-        column.setMinWidth(0);
-        column.setMaxWidth(0);
-        column.setPreferredWidth(0);
+//        TableColumn column = table.getColumnModel().getColumn(0);
+//        column.setMinWidth(0);
+//        column.setMaxWidth(0);
+//        column.setPreferredWidth(0);
         table.setFillsViewportHeight(true);
 
         return table;
@@ -192,7 +192,7 @@ public class PanelUtil {
 //        return needLoginPanel;
 //    }
 
-    public static void modifyActionGroupWhenLogin(DefaultActionGroup actionGroup, User loginUser) {
+    public static void modifyActionGroupWhenLogin(DefaultActionGroup actionGroup, JBPanel<?> mainPanel, User loginUser) {
         ApplicationManager.getApplication().invokeLater(() -> {
             ActionManager actionManager = ActionManager.getInstance();
 
@@ -210,7 +210,7 @@ public class PanelUtil {
             actionManager.registerAction(KeyConstant.VIP, vipAction);
 
             // 增加 注销
-            LogoutAction logoutAction = new LogoutAction(LOGOUT_ZH, IconConstant.LOGOUT, actionGroup);
+            LogoutAction logoutAction = new LogoutAction(LOGOUT_ZH, IconConstant.LOGOUT, actionGroup, mainPanel);
             actionGroup.add(logoutAction);
             actionManager.registerAction(KeyConstant.LOGOUT, logoutAction);
         });

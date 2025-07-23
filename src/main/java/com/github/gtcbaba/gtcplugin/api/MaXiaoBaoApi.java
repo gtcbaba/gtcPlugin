@@ -1,7 +1,11 @@
 package com.github.gtcbaba.gtcplugin.api;
 
 import com.github.gtcbaba.gtcplugin.model.common.BaseResponse;
+import com.github.gtcbaba.gtcplugin.model.common.Page;
+import com.github.gtcbaba.gtcplugin.model.common.PageRequest;
+import com.github.gtcbaba.gtcplugin.model.dto.TaskTypeQueryRequest;
 import com.github.gtcbaba.gtcplugin.model.dto.UserLoginRequest;
+import com.github.gtcbaba.gtcplugin.model.response.Task;
 import com.github.gtcbaba.gtcplugin.model.response.User;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -34,6 +38,11 @@ public interface MaXiaoBaoApi {
      */
     @POST("user/logout")
     Call<BaseResponse<Boolean>> userLogout();
+
+    @POST("task/list/page")
+    Call<BaseResponse<Page<Task>>> getTaskList(
+            @Body TaskTypeQueryRequest queryRequest
+    );
 
 //    /**
 //     * 获取题库列表

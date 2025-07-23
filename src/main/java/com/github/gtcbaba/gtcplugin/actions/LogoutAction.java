@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.ui.components.JBPanel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -30,12 +31,14 @@ import static com.github.gtcbaba.gtcplugin.constant.KeyConstant.LOGIN_ZH;
 public class LogoutAction extends AnAction implements DumbAware {
 
     private final DefaultActionGroup actionGroup;
+    private JBPanel<?> mainPanel;
 
     // 构造函数
-    public LogoutAction(String text, Icon icon, DefaultActionGroup actionGroup) {
+    public LogoutAction(String text, Icon icon, DefaultActionGroup actionGroup, JBPanel<?> mainPanel) {
         // Action 名称
         super(text, text, icon);
         this.actionGroup = actionGroup;
+        this.mainPanel = mainPanel;
     }
 
     @Override
@@ -78,9 +81,12 @@ public class LogoutAction extends AnAction implements DumbAware {
                 actionManager.unregisterAction(KeyConstant.VIP);
 
                 // 3.3 增加 登录
-                LoginAction loginAction = new LoginAction(LOGIN_ZH, IconConstant.LOGIN, actionGroup);
+                LoginAction loginAction = new LoginAction(LOGIN_ZH, IconConstant.LOGIN, actionGroup, mainPanel);
                 actionGroup.add(loginAction);
                 actionManager.registerAction(LOGIN, loginAction);
+
+                // 移除信息区域
+                mainPanel.remove(1);
             });
         });
     }

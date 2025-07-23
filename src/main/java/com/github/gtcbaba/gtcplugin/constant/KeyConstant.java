@@ -8,4 +8,5 @@ public interface KeyConstant {
     String VIP = "VIP";
     String LOGOUT_ZH = "注销";
     String LOGOUT = "LOGOUT";
+    String PLUGIN_NAME = "码小保";
 }

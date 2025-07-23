@@ -5,13 +5,13 @@ import com.github.gtcbaba.gtcplugin.config.GlobalState;
 import com.github.gtcbaba.gtcplugin.model.response.User;
 import com.github.gtcbaba.gtcplugin.utils.PanelUtil;
 import com.github.gtcbaba.gtcplugin.view.LoginDialog;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.ui.components.JBPanel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,11 +23,14 @@ public class LoginAction extends AnAction implements DumbAware {
 
     private final DefaultActionGroup actionGroup;
 
+    private JBPanel<?> mainPanel;
+
     // 构造函数
-    public LoginAction(String text, Icon icon, DefaultActionGroup actionGroup) {
+    public LoginAction(String text, Icon icon, DefaultActionGroup actionGroup, JBPanel<?> mainPanel) {
         // Action 名称
         super(text, text, icon);
         this.actionGroup = actionGroup;
+        this.mainPanel = mainPanel;
     }
 
     @Override
@@ -51,8 +54,13 @@ public class LoginAction extends AnAction implements DumbAware {
             if (loginUser == null) {
                 return;
             }
-
-            PanelUtil.modifyActionGroupWhenLogin(actionGroup, loginUser);
+            TaskAction taskAction = new TaskAction(mainPanel);
+            DataContext dataContext = SimpleDataContext.getSimpleContext(CommonDataKeys.PROJECT, ProjectManager.getInstance().getDefaultProject());
+            // 构建 AnActionEvent 对象
+            AnActionEvent event = AnActionEvent.createFromAnAction(taskAction, null, "somePlace", dataContext);
+            // 手动触发 action
+            taskAction.actionPerformed(event);
+            PanelUtil.modifyActionGroupWhenLogin(actionGroup, mainPanel, loginUser);
         });
     }
 

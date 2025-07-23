@@ -18,6 +18,10 @@ public interface CommonConstant {
 
     String PLUGIN_QD = WEB_HOST + "embed/q/%s/%s?theme=%s";
 
+    Long DEFAULT_TASK_TYPE_CATEGORY_ID = 0L;
+    Long DEMAND_TASK_TYPE_CATEGORY_ID = 1L;
+    Long BUG_TASK_TYPE_CATEGORY_ID = 2L;
+
 
 
 

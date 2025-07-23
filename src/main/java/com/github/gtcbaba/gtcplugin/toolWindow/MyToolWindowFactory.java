@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.github.gtcbaba.gtcplugin.actions.LoginAction;
 import com.github.gtcbaba.gtcplugin.actions.LogoutAction;
 import com.github.gtcbaba.gtcplugin.actions.OpenUrlAction;
+import com.github.gtcbaba.gtcplugin.actions.TaskAction;
 import com.github.gtcbaba.gtcplugin.config.ApiConfig;
 import com.github.gtcbaba.gtcplugin.config.GlobalState;
 import com.github.gtcbaba.gtcplugin.constant.CommonConstant;
@@ -14,9 +15,8 @@ import com.github.gtcbaba.gtcplugin.model.enums.ErrorCode;
 import com.github.gtcbaba.gtcplugin.model.response.User;
 import com.github.gtcbaba.gtcplugin.view.LoginDialog;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionToolbar;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -48,16 +48,25 @@ public class MyToolWindowFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        //用户第一次点击插件时会弹出登陆框  而不会展示插件主界面
-        toolWindow.hide(null);
-        LoginDialog loginDialog = new LoginDialog(project);
-        loginDialog.show();
-
+        GlobalState globalState = GlobalState.getInstance();
+        try {
+            //有token的话就根据这个token去getLoginUser（addHeader拦截器会把token放到请求头中）
+            User loginUser = ApiConfig.maXiaoBaoApi.getLoginUser().execute().body().getData();
+            if (loginUser == null) {
+                globalState.removeSavedToken();
+                globalState.removeSavedUser();
+                //用户第一次点击插件时会弹出登陆框  而不会展示插件主界面
+                toolWindow.hide(null);
+                LoginDialog loginDialog = new LoginDialog(project);
+                loginDialog.show();
+            }
+        } catch (IOException e) {
+            logger.warn("获取登录用户失败");
+        }
         ContentFactory contentFactory = ApplicationManager.getApplication().getService(ContentFactory.class);
         JBPanel<?> mainPanel = new JBPanel<>(new BorderLayout());
         mainPanel.setBorder(JBUI.Borders.empty());
 
-        GlobalState globalState = GlobalState.getInstance();
         String token = globalState.getSavedToken();
         //登陆框关闭（可能是登陆成功、也可能是手动关闭）后检查登陆态
         if (token != null && !token.isEmpty()) {
@@ -67,10 +76,17 @@ public class MyToolWindowFactory implements ToolWindowFactory {
 //            JLabel label = new JLabel("这是ToolWindow的内容");
 //            mainPanel.add(label, BorderLayout.CENTER);
 
-            Content content = contentFactory.createContent(mainPanel, "Tasks", true);
+            Content content = contentFactory.createContent(mainPanel, "开发任务", true);
             content.setCloseable(false);
             ActionToolbar actionToolbar = createToolbar(content, mainPanel);
             mainPanel.add(actionToolbar.getComponent(), BorderLayout.NORTH);
+            TaskAction taskAction = new TaskAction(mainPanel);
+            DataContext dataContext = SimpleDataContext.getSimpleContext(CommonDataKeys.PROJECT, project);
+
+            // 构建 AnActionEvent 对象
+            AnActionEvent event = AnActionEvent.createFromAnAction(taskAction, null, "somePlace", dataContext);
+            // 手动触发 action
+            taskAction.actionPerformed(event);
             toolWindow.getContentManager().addContent(content);
             toolWindow.show();
         } else {
@@ -78,7 +94,7 @@ public class MyToolWindowFactory implements ToolWindowFactory {
             toolWindow.hide(null);
 //            JLabel label = new JLabel("您尚未登陆");
 //            mainPanel.add(label, BorderLayout.CENTER);
-            Content content = contentFactory.createContent(mainPanel, "Tasks", true);
+            Content content = contentFactory.createContent(mainPanel, "开发任务", true);
             content.setCloseable(false);
             ActionToolbar actionToolbar = createToolbar(content, mainPanel);
             mainPanel.add(actionToolbar.getComponent(), BorderLayout.NORTH);
@@ -120,7 +136,7 @@ public class MyToolWindowFactory implements ToolWindowFactory {
         GlobalState globalState = GlobalState.getInstance();
         String token = globalState.getSavedToken();
         if (StrUtil.isBlank(token)) {
-            LoginAction loginAction = new LoginAction(LOGIN_ZH, IconConstant.LOGIN, actionGroup);
+            LoginAction loginAction = new LoginAction(LOGIN_ZH, IconConstant.LOGIN, actionGroup, mainPanel);
             actionGroup.add(loginAction);
             actionManager.registerAction(LOGIN, loginAction);
         } else {
@@ -142,7 +158,7 @@ public class MyToolWindowFactory implements ToolWindowFactory {
                 globalState.removeSavedToken();
                 globalState.removeSavedUser();
 
-                LoginAction loginAction = new LoginAction(LOGIN_ZH, IconConstant.LOGIN, actionGroup);
+                LoginAction loginAction = new LoginAction(LOGIN_ZH, IconConstant.LOGIN, actionGroup, mainPanel);
                 actionGroup.add(loginAction);
                 actionManager.registerAction(LOGIN, loginAction);
             } else {
@@ -151,13 +167,13 @@ public class MyToolWindowFactory implements ToolWindowFactory {
                 actionGroup.add(vipAction);
                 actionManager.registerAction(VIP, vipAction);
 
-                LogoutAction logoutAction = new LogoutAction(LOGOUT_ZH, IconConstant.LOGOUT, actionGroup);
+                LogoutAction logoutAction = new LogoutAction(LOGOUT_ZH, IconConstant.LOGOUT, actionGroup, mainPanel);
                 actionGroup.add(logoutAction);
                 actionManager.registerAction(LOGOUT, logoutAction);
 
                 String userName = loginUser.getUserName();
                 if (StrUtil.isNotBlank(userName)) {
-                    content.setDisplayName(userName);
+                    content.setDisplayName("开发任务 - " + userName);
                 }
             }
         }
