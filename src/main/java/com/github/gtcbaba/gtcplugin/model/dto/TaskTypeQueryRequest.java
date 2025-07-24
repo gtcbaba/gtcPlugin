@@ -28,6 +28,16 @@ public class TaskTypeQueryRequest extends PageRequest implements Serializable {
     private String searchText;
 
     /**
+     * 具体任务类型（如 前端开发/后端开发/算法）
+     */
+    private Integer codeType;
+
+    /**
+     * 任务状态 （如 待开发/开发中/开发完成）
+     */
+    private Integer status;
+
+    /**
      * 关联用户id
      */
     private Long userId;

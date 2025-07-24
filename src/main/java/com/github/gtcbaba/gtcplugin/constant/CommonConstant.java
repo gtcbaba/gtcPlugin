@@ -16,6 +16,9 @@ public interface CommonConstant {
 
     String VIP = WEB_HOST + "vip";
 
+
+    String IDP_HOST = "https://idp.ybaobx.com";
+
     String PLUGIN_QD = WEB_HOST + "embed/q/%s/%s?theme=%s";
 
     Long DEFAULT_TASK_TYPE_CATEGORY_ID = 0L;

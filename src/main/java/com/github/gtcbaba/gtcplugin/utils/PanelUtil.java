@@ -21,6 +21,7 @@ import com.intellij.ui.components.JBOptionButton;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.ui.table.JBTable;
+import com.intellij.util.ui.JBUI;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -43,6 +44,27 @@ import static com.github.gtcbaba.gtcplugin.constant.PageConstant.PAGE_SIZE;
  * @author pine
  */
 public class PanelUtil {
+
+    private static final GridBagConstraints prevConstraints = new GridBagConstraints();
+    private static final GridBagConstraints pageConstraints = new GridBagConstraints();
+    private static final GridBagConstraints nextConstraints = new GridBagConstraints();
+    private static final GridBagConstraints totalConstraints = new GridBagConstraints();
+
+    static {
+        prevConstraints.gridx = 0;       // 第 0 列
+        prevConstraints.gridy = 0;
+        prevConstraints.insets = JBUI.insets(5, 5, 0, 5);
+        pageConstraints.gridx = 1;       // 第 1 列
+        pageConstraints.gridy = 0;
+        pageConstraints.insets = JBUI.insets(5, 5, 0, 5);
+        nextConstraints.gridx = 2;       // 第 1 列
+        nextConstraints.gridy = 0;
+        nextConstraints.insets = JBUI.insets(5, 5, 0, 5);
+        totalConstraints.gridx = 0;       // 第 1 列
+        totalConstraints.gridy = 1;
+        totalConstraints.gridwidth = 3;   // 跨两列，实现居中显示
+        totalConstraints.insets = JBUI.insetsBottom(10);
+    }
 
     public static JPanel createClosePanel(String title, JPanel tabPanel, JBTabbedPane tabbedPane) {
         JPanel tabLabel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -132,6 +154,7 @@ public class PanelUtil {
         return table;
     }
 
+    // 重置分页组件为第一页  并根据总数渲染页数  同时绑定点击上下页的事件
     public static void updatePaginationPanel(JBPanel<?> paginationPanel, long total, int[] currentPage, BiConsumer<Integer, Integer> loadPage) {
         paginationPanel.removeAll();
         // int pageSize = Objects.requireNonNull(GlobalState.getInstance().getState()).pageSize;
@@ -159,9 +182,13 @@ public class PanelUtil {
             }
         });
 
-        paginationPanel.add(prevButton);
-        paginationPanel.add(pageLabel);
-        paginationPanel.add(nextButton);
+        paginationPanel.add(prevButton, prevConstraints);
+        paginationPanel.add(pageLabel, pageConstraints);
+        paginationPanel.add(nextButton, nextConstraints);
+        JBLabel totalLabel = new JBLabel("共 " + total + " 条");
+        Color fadedColor = new JBColor(new Color(0, 0, 0, 128), new Color(255, 255, 255, 128)); // 黑色，Alpha = 128
+        totalLabel.setForeground(fadedColor);
+        paginationPanel.add(totalLabel, totalConstraints);
 
         paginationPanel.revalidate();
         paginationPanel.repaint();
@@ -204,10 +231,10 @@ public class PanelUtil {
             actionGroup.remove(loginAction);
             actionManager.unregisterAction(KeyConstant.LOGIN);
 
-            // 增加 会员
-            OpenUrlAction vipAction = new OpenUrlAction(loginUser.getUserName(), CommonConstant.VIP, AllIcons.General.User);
-            actionGroup.add(vipAction);
-            actionManager.registerAction(KeyConstant.VIP, vipAction);
+            // 增加 用户
+            OpenUrlAction userAction = new OpenUrlAction(loginUser.getUserName(), CommonConstant.IDP_HOST, AllIcons.General.User);
+            actionGroup.add(userAction);
+            actionManager.registerAction(KeyConstant.IDP, userAction);
 
             // 增加 注销
             LogoutAction logoutAction = new LogoutAction(LOGOUT_ZH, IconConstant.LOGOUT, actionGroup, mainPanel);

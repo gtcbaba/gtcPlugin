@@ -1,8 +1,11 @@
 package com.github.gtcbaba.gtcplugin.actions;
 
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ReflectUtil;
 import com.github.gtcbaba.gtcplugin.config.ApiConfig;
 import com.github.gtcbaba.gtcplugin.config.GlobalState;
 import com.github.gtcbaba.gtcplugin.constant.CommonConstant;
+import com.github.gtcbaba.gtcplugin.constant.KeyConstant;
 import com.github.gtcbaba.gtcplugin.constant.PageConstant;
 import com.github.gtcbaba.gtcplugin.constant.TextConstant;
 import com.github.gtcbaba.gtcplugin.model.common.Page;
@@ -15,6 +18,7 @@ import com.github.gtcbaba.gtcplugin.model.response.Task;
 import com.github.gtcbaba.gtcplugin.model.response.User;
 import com.github.gtcbaba.gtcplugin.utils.ContentUtil;
 import com.github.gtcbaba.gtcplugin.utils.PanelUtil;
+import com.github.gtcbaba.gtcplugin.view.GitBranchManager;
 import com.github.gtcbaba.gtcplugin.view.LoginDialog;
 import com.github.gtcbaba.gtcplugin.view.MTabModel;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -22,6 +26,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SearchTextField;
@@ -30,21 +35,22 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.WrapLayout;
+import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class TaskAction extends AnAction {
 
@@ -52,15 +58,33 @@ public class TaskAction extends AnAction {
     private MTabModel tableModel;
     private JBPanel<?> paginationPanel;
     private JBPanel<?> mainPanel;
+    private JBTable table;
 
     // 给页码组件渲染用的（根据它决定有没有上下页）
     private final int[] currentPage = new int[]{1};
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     private final TaskTypeQueryRequest queryRequest = new TaskTypeQueryRequest();
 
-    Vector<String> demandColumns = new Vector<>(Arrays.asList("需求id", "需求名称", "任务类型", "任务状态", "排期"));
-    Vector<String> bugColumns = new Vector<>(Arrays.asList("缺陷id", "缺陷名称", "任务类型", "任务状态", "排期"));
-    Vector<String> defaultColumns = new Vector<>(Arrays.asList("id", "名称", "任务类型", "任务状态", "排期"));
+    Vector<String> demandColumns = new Vector<>(Arrays.asList("需求ID", "需求名称", "任务类型", "任务状态", "排期"));
+    Vector<String> bugColumns = new Vector<>(Arrays.asList("缺陷ID", "缺陷名称", "任务类型", "任务状态", "排期"));
+    Vector<String> defaultColumns = new Vector<>(Arrays.asList("ID", "名称", "任务类型", "任务状态", "排期"));
+
+
+    final int initSelectedIndex = -2;
+    // 分别用于维护 任务类型 和 任务状态 的最近选择状态
+    int[] comboBoxLastSelectedItem = {initSelectedIndex, initSelectedIndex};
+    final int nullIndex = -1;
+    final int codeTypeLastSelectedIndex = 0;
+    final int statusLastSelectedIndex = 1;
+    private final List<ComboBoxItem> codeTypeComboBoxItems = Arrays.stream(CodeTypeEnum.values())
+            .map(item -> new ComboBoxItem(String.valueOf(item.getValue()), item.getCodeType()))
+            .collect(Collectors.toList());
+    private final List<ComboBoxItem> statusComboBoxItems = Arrays.stream(DevelopStatusEnum.values())
+            .map(item -> new ComboBoxItem(String.valueOf(item.getValue()), item.getDevelopStatus()))
+            .collect(Collectors.toList());
+
+    private boolean firstResize = true;
+
 
     public TaskAction(String text, Icon icon) {
         super(text, text, icon);
@@ -204,6 +228,24 @@ public class TaskAction extends AnAction {
 
                 // 重新渲染表格
                 tableModel.fireTableDataChanged();
+
+                // 重新设置列宽
+                TableColumnModel columnModel = table.getColumnModel();
+                int width = table.getWidth();
+                // 根据 Tool Window 的宽度调整列宽比例
+                // id 占 5%
+                columnModel.getColumn(0).setPreferredWidth((int) (width * 0.08));
+                // 需求名称占 40%
+                columnModel.getColumn(1).setPreferredWidth((int) (width * 0.45));
+                // 任务类型 占 20%
+                columnModel.getColumn(2).setPreferredWidth((int) (width * 0.15));
+                // 任务状态 占 15%
+                columnModel.getColumn(3).setPreferredWidth((int) (width * 0.15));
+                // 排期 占 20%
+                columnModel.getColumn(4).setPreferredWidth((int) (width * 0.17));
+                // 重新布局表格
+                table.revalidate();
+
                 // 更新分页栏
                 PanelUtil.updatePaginationPanel(paginationPanel, data.getTotal(), currentPage, this::loadPage);
             });
@@ -251,7 +293,7 @@ public class TaskAction extends AnAction {
             ApplicationManager.getApplication().invokeLater(() -> {
                 tableModel = new MTabModel();
 //                if (queryRequest.getTaskTypeId() ==)
-                tableModel.addColumn("id");
+                tableModel.addColumn("ID");
                 tableModel.addColumn("名称");
                 tableModel.addColumn("任务类型");
                 tableModel.addColumn("任务状态");
@@ -268,18 +310,54 @@ public class TaskAction extends AnAction {
                     if (selectedRow != -1) {
                         // 获取选中行的数据
                         String id = (String) tempTable.getValueAt(selectedRow, 0);
-
+                        String taskName = (String) tempTable.getValueAt(selectedRow, 1);
+                        GitBranchManager gitBranchManager = new GitBranchManager();
+                        gitBranchManager.addGitTab(Long.valueOf(id), taskName, project);
                         // 打开包含该行数据的新选项卡
 //                        QuestionListManager questionListManager = new QuestionListManager();
 //                        questionListManager.addQuestionTab(Long.valueOf(id), project);
-                        JOptionPane.showMessageDialog(null, id, "提示", JOptionPane.INFORMATION_MESSAGE);
+                        //JOptionPane.showMessageDialog(null, id, "提示", JOptionPane.INFORMATION_MESSAGE);
                     }
                 }, 2);
+
+                // 添加监听器，监听 table 大小变化
+                TableColumnModel columnModel = table.getColumnModel();
+                table.addComponentListener(new ComponentAdapter() {
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        if (!firstResize) {
+                            return;
+                        }
+                        firstResize = false;
+                        // 获取当前宽度
+                        int width = table.getWidth();
+
+                        // 根据 Tool Window 的宽度调整列宽比例
+                        // id 占 5%
+                        columnModel.getColumn(0).setPreferredWidth((int) (width * 0.08));
+                        // 需求名称占 40%
+                        columnModel.getColumn(1).setPreferredWidth((int) (width * 0.45));
+                        // 任务类型 占 20%
+                        columnModel.getColumn(2).setPreferredWidth((int) (width * 0.15));
+                        // 任务状态 占 15%
+                        columnModel.getColumn(3).setPreferredWidth((int) (width * 0.15));
+                        // 排期 占 20%
+                        columnModel.getColumn(4).setPreferredWidth((int) (width * 0.17));
+
+                        // 重新布局表格
+                        table.revalidate();
+                    }
+                });
+
                 // 将表格添加到滚动面板
                 JBScrollPane scrollPane = new JBScrollPane(table);
                 // 确保表格充满视口
                 scrollPane.setViewportView(table);
                 tabPanel.add(scrollPane, BorderLayout.CENTER);
+
+
+                // 暴露 table，使得重新设置列名后再重新设置列宽
+                this.table = table;
 
                 // 更新分页条
                 PanelUtil.updatePaginationPanel(paginationPanel, data.getTotal(), currentPage, this::loadPage);
@@ -352,10 +430,145 @@ public class TaskAction extends AnAction {
             currentPage[0] = PageConstant.FIRST_PAGE;
             searchAndLoadData(queryRequest);
         });
+
         // 添加筛选框区域
-        // todo
+        ApplicationManager.getApplication().invokeLater(() -> {
+            JPanel filterPanel = getFilterPanel();
+            searchPanel.add(filterPanel, BorderLayout.SOUTH);
+        });
 
         return searchPanel;
 
+    }
+
+    // 自定义类，用于存储 key-value
+    @AllArgsConstructor
+    public static class ComboBoxItem {
+        private String key;
+        private String value;
+
+        @Override
+        public String toString() {
+            // 显示在 JComboBox 中的内容
+            return value;
+        }
+
+        // key 相等则 ComboBoxItem 相等
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof ComboBoxItem) {
+                ComboBoxItem item = (ComboBoxItem) o;
+                return key.equals(item.key);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return key.hashCode();
+        }
+    }
+
+    // 自定义渲染器，显示✅
+    private static class CheckmarkRenderer extends DefaultListCellRenderer {
+        private final JComboBox<ComboBoxItem> comboBox;
+        private final String placeHolder;
+
+        public CheckmarkRenderer(JComboBox<ComboBoxItem> comboBox, String placeHolder) {
+            this.comboBox = comboBox;
+            this.placeHolder = placeHolder;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (index == comboBox.getSelectedIndex()) {
+                label.setText(value + " ✅");
+            } else {
+                label.setText(value != null ? value.toString() : "");
+            }
+            if (value == null) {
+                label.setText(placeHolder);
+            }
+            return label;
+        }
+    }
+
+    // 创建筛选框（选项由自定义渲染器处理）
+
+    /**
+     * @param supplier 提供 comboBox 的数据来源
+     * @param lastSelectedIndex  代表不同的筛选框
+     * @param fieldName 代表搜索哪个字段
+     * @param placeHolder 没选项时的占位符
+     * @return 返回封装好的筛选框组件
+     */
+    private JComboBox<ComboBoxItem> createCustomFilterBox (Supplier<List<ComboBoxItem>> supplier,
+                                                          int lastSelectedIndex,
+                                                          String fieldName,
+                                                          String placeHolder) {
+        // ComboBox代表筛选框  里面装着一个个ComboBoxItem
+        ComboBox<ComboBoxItem> comboBox = new ComboBox<>();
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            // 获得筛选框数据来源
+            List<ComboBoxItem> comboBoxItems = supplier.get();
+            ApplicationManager.getApplication().invokeLater(() -> {
+                comboBox.setModel(new DefaultComboBoxModel<>(ArrayUtil.toArray(comboBoxItems, ComboBoxItem.class)));
+                comboBox.setSelectedIndex(nullIndex);
+                comboBoxLastSelectedItem[lastSelectedIndex] = nullIndex;
+                comboBox.setRenderer(new CheckmarkRenderer(comboBox, placeHolder));
+                // 添加点击搜索逻辑
+                comboBox.addActionListener(new ActionListener() {
+                    // 防止递归调用
+                    private boolean ignoreAction = false;
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (ignoreAction) {
+                            return;
+                        }
+                        ignoreAction = true;
+
+                        int selectedIndex = comboBox.getSelectedIndex();
+                        // 获取下拉列表选中的值
+                        ComboBoxItem selectedItem = (ComboBoxItem) comboBox.getSelectedItem();
+                            // 如果选择的还是上次筛选的条件  则取消它（将对应条件字段置null）
+                        if (comboBoxLastSelectedItem[lastSelectedIndex] == selectedIndex) {
+                            ReflectUtil.setFieldValue(queryRequest, fieldName, null);
+                            comboBox.setSelectedIndex(nullIndex);
+                            comboBoxLastSelectedItem[lastSelectedIndex] = nullIndex;
+                        } else {
+                            // 如果这次选择的不是上次选的条件  就将对应条件字段置为它 同时记录下这个筛选框上次选择的条件
+                            assert selectedItem != null;
+                            String selectedItemKey = selectedItem.key;
+                            ReflectUtil.setFieldValue(queryRequest, fieldName, Integer.valueOf(selectedItemKey));
+                            comboBoxLastSelectedItem[lastSelectedIndex] = selectedIndex;
+                        }
+
+                        ignoreAction = false;
+
+                        queryRequest.setCurrent(PageConstant.FIRST_PAGE);
+                        currentPage[0] = PageConstant.FIRST_PAGE;
+                        searchAndLoadData(queryRequest);
+                    }
+                });
+            });
+        });
+        return comboBox;
+    }
+
+
+    private JPanel getFilterPanel() {
+        JPanel filterPanel = new JPanel(new GridLayout(1, 0));
+
+        // 任务类型筛选框
+        JComboBox<ComboBoxItem> codeTypeComboBox = createCustomFilterBox(() -> codeTypeComboBoxItems, codeTypeLastSelectedIndex, KeyConstant.CODE_TYPE_FIELD, KeyConstant.CODE_TYPE_PLACEHOLDER);
+        filterPanel.add(codeTypeComboBox);
+        // 任务状态筛选框
+        JComboBox<ComboBoxItem> statusComboBox = createCustomFilterBox(() -> statusComboBoxItems, statusLastSelectedIndex, KeyConstant.STATUS_FIELD, KeyConstant.STATUS_PLACEHOLDER);
+        filterPanel.add(statusComboBox);
+
+        return filterPanel;
     }
 }

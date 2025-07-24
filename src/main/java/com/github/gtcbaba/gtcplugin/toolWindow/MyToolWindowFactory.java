@@ -163,9 +163,9 @@ public class MyToolWindowFactory implements ToolWindowFactory {
                 actionManager.registerAction(LOGIN, loginAction);
             } else {
                 //有token且token有效没过期 则说明登陆了
-                OpenUrlAction vipAction = new OpenUrlAction(VIP_ZH, CommonConstant.VIP, AllIcons.General.User);
+                OpenUrlAction vipAction = new OpenUrlAction(IDP_ZH, CommonConstant.IDP_HOST, AllIcons.General.User);
                 actionGroup.add(vipAction);
-                actionManager.registerAction(VIP, vipAction);
+                actionManager.registerAction(IDP, vipAction);
 
                 LogoutAction logoutAction = new LogoutAction(LOGOUT_ZH, IconConstant.LOGOUT, actionGroup, mainPanel);
                 actionGroup.add(logoutAction);

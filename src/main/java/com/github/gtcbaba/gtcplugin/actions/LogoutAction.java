@@ -72,13 +72,13 @@ public class LogoutAction extends AnAction implements DumbAware {
                 actionGroup.remove(logoutAction);
                 actionManager.unregisterAction(KeyConstant.LOGOUT);
 
-                // 3.2 删除 会员
-                AnAction vipAction = actionManager.getAction(KeyConstant.VIP);
-                if (vipAction == null) {
+                // 3.2 删除 用户图标
+                AnAction userAction = actionManager.getAction(KeyConstant.IDP);
+                if (userAction == null) {
                     return;
                 }
-                actionGroup.remove(vipAction);
-                actionManager.unregisterAction(KeyConstant.VIP);
+                actionGroup.remove(userAction);
+                actionManager.unregisterAction(KeyConstant.IDP);
 
                 // 3.3 增加 登录
                 LoginAction loginAction = new LoginAction(LOGIN_ZH, IconConstant.LOGIN, actionGroup, mainPanel);

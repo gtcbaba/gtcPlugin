@@ -11,7 +11,7 @@ public interface PageConstant {
      */
     int[] PAGE_SIZES = {10, 20, 50};
 
-    int PAGE_SIZE = PAGE_SIZES[1];
+    int PAGE_SIZE = PAGE_SIZES[0];
 
     int FIRST_PAGE = 1;
 

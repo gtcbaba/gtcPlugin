@@ -18,7 +18,8 @@ public enum DevelopStatusEnum {
 
     TODO("待开发", 1),
     DOING("开发中", 2),
-    DONE("开发完成", 3)
+    DONE("开发完成", 3),
+    ALL("待开发/开发中/开发完成", 0)
     ;
 
     private final String developStatus;
