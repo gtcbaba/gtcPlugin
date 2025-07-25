@@ -17,7 +17,7 @@ public class GitBranchManager
         ContentUtil.createContent(newTabPanel, taskName, false, project);
 
         JButton jButton = new JButton(taskId.toString());
-        jButton.setIcon(new ImageIcon("/Users/ybbj-1100659/IdeaProjects/gtcwork/gtcPlugin/src/main/resources/icons/yuanbao.png"));
+//        jButton.setIcon(new ImageIcon("/Users/ybbj-1100659/IdeaProjects/gtcwork/gtcPlugin/src/main/resources/icons/yuanbao.png"));
 //        // 搜索条
 //        JPanel searchPanel = this.getSearchPanel();
 //        newTabPanel.add(searchPanel, BorderLayout.NORTH);

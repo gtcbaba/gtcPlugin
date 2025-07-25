@@ -55,7 +55,7 @@ public class LoginAction extends AnAction implements DumbAware {
                 return;
             }
             TaskAction taskAction = new TaskAction(mainPanel);
-            DataContext dataContext = SimpleDataContext.getSimpleContext(CommonDataKeys.PROJECT, ProjectManager.getInstance().getDefaultProject());
+            DataContext dataContext = SimpleDataContext.getSimpleContext(CommonDataKeys.PROJECT, e.getProject());
             // 构建 AnActionEvent 对象
             AnActionEvent event = AnActionEvent.createFromAnAction(taskAction, null, "somePlace", dataContext);
             // 手动触发 action
