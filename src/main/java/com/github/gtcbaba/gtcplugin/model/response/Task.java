@@ -40,4 +40,9 @@ public class Task implements Serializable {
      */
     private Date scheduledTime;
 
+    /**
+     * 对应代码仓库id
+     */
+    private Long codeRepositoryId;
+
 }

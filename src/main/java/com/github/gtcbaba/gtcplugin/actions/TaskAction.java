@@ -41,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
@@ -65,9 +66,9 @@ public class TaskAction extends AnAction {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     private final TaskTypeQueryRequest queryRequest = new TaskTypeQueryRequest();
 
-    Vector<String> demandColumns = new Vector<>(Arrays.asList("需求ID", "需求名称", "任务类型", "任务状态", "排期"));
-    Vector<String> bugColumns = new Vector<>(Arrays.asList("缺陷ID", "缺陷名称", "任务类型", "任务状态", "排期"));
-    Vector<String> defaultColumns = new Vector<>(Arrays.asList("ID", "名称", "任务类型", "任务状态", "排期"));
+    Vector<String> demandColumns = new Vector<>(Arrays.asList("需求ID", "需求名称", "任务类型", "任务状态", "排期", "所属代码仓库id"));
+    Vector<String> bugColumns = new Vector<>(Arrays.asList("缺陷ID", "缺陷名称", "任务类型", "任务状态", "排期", "所属代码仓库id"));
+    Vector<String> defaultColumns = new Vector<>(Arrays.asList("ID", "名称", "任务类型", "任务状态", "排期", "所属代码仓库id"));
 
 
     final int initSelectedIndex = -2;
@@ -223,7 +224,7 @@ public class TaskAction extends AnAction {
                 // 添加新数据到表格模型
                 for (Task row : data.getRecords()) {
                     tableModel.addRow(new Object[]{row.getId().toString(), row.getTaskName(), CodeTypeEnum.getCodeTypeByValue(row.getCodeType()),
-                            DevelopStatusEnum.getDevelopStatusByValue(row.getStatus()), sdf.format(row.getScheduledTime())});
+                            DevelopStatusEnum.getDevelopStatusByValue(row.getStatus()), sdf.format(row.getScheduledTime()), row.getCodeRepositoryId().toString()});
                 }
 
                 // 重新渲染表格
@@ -243,6 +244,12 @@ public class TaskAction extends AnAction {
                 columnModel.getColumn(3).setPreferredWidth((int) (width * 0.15));
                 // 排期 占 20%
                 columnModel.getColumn(4).setPreferredWidth((int) (width * 0.17));
+                // 设置 codeRepositoryId 列宽为0，使列存在但不可见
+                TableColumn column = columnModel.getColumn(5);
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+                column.setPreferredWidth(0);
+                // table.setFillsViewportHeight(true);
                 // 重新布局表格
                 table.revalidate();
 
@@ -298,21 +305,22 @@ public class TaskAction extends AnAction {
                 tableModel.addColumn("任务类型");
                 tableModel.addColumn("任务状态");
                 tableModel.addColumn("排期");
+                tableModel.addColumn("所属代码仓库id");
 
                 // 将数据添加到表格模型
                 for (Task row : data.getRecords()) {
                     tableModel.addRow(new Object[]{row.getId().toString(), row.getTaskName(), CodeTypeEnum.getCodeTypeByValue(row.getCodeType()),
-                            DevelopStatusEnum.getDevelopStatusByValue(row.getStatus()), sdf.format(row.getScheduledTime())});
+                            DevelopStatusEnum.getDevelopStatusByValue(row.getStatus()), sdf.format(row.getScheduledTime()), row.getCodeRepositoryId().toString()});
                 }
                 // 把 tableModel 放到 JBTable 中，并给 JBTable绑定双击事件
                 JBTable table = PanelUtil.createTablePanel(tableModel, (tempTable, mouseEvent) -> {
                     int selectedRow = tempTable.getSelectedRow();
                     if (selectedRow != -1) {
                         // 获取选中行的数据
-                        String id = (String) tempTable.getValueAt(selectedRow, 0);
+                        String codeRepositoryId = (String) tempTable.getValueAt(selectedRow, 5);
                         String taskName = (String) tempTable.getValueAt(selectedRow, 1);
                         GitBranchManager gitBranchManager = new GitBranchManager();
-                        gitBranchManager.addGitTab(Long.valueOf(id), taskName, project);
+                        gitBranchManager.addGitTab(Long.valueOf(codeRepositoryId), taskName, project);
                         // 打开包含该行数据的新选项卡
 //                        QuestionListManager questionListManager = new QuestionListManager();
 //                        questionListManager.addQuestionTab(Long.valueOf(id), project);

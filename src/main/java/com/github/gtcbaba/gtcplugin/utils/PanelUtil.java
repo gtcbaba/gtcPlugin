@@ -145,10 +145,10 @@ public class PanelUtil {
         table.getColumnModel().getColumn(columnIndex).setCellRenderer(categoryRenderer);
 
         // 设置列宽为0，使列存在但不可见
-//        TableColumn column = table.getColumnModel().getColumn(0);
-//        column.setMinWidth(0);
-//        column.setMaxWidth(0);
-//        column.setPreferredWidth(0);
+        TableColumn column = table.getColumnModel().getColumn(5);
+        column.setMinWidth(0);
+        column.setMaxWidth(0);
+        column.setPreferredWidth(0);
         table.setFillsViewportHeight(true);
 
         return table;
