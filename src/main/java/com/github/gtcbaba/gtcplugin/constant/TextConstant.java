@@ -19,4 +19,6 @@ public interface TextConstant {
 
     String MY_TASKS = "我的任务";
 
+    String GIT_PLACE_HOLDER = "请输入新分支名";
+
 }

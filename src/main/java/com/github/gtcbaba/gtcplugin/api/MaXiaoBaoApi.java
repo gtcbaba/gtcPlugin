@@ -3,14 +3,15 @@ package com.github.gtcbaba.gtcplugin.api;
 import com.github.gtcbaba.gtcplugin.model.common.BaseResponse;
 import com.github.gtcbaba.gtcplugin.model.common.Page;
 import com.github.gtcbaba.gtcplugin.model.common.PageRequest;
-import com.github.gtcbaba.gtcplugin.model.dto.TaskTypeQueryRequest;
-import com.github.gtcbaba.gtcplugin.model.dto.UserLoginRequest;
-import com.github.gtcbaba.gtcplugin.model.response.Task;
-import com.github.gtcbaba.gtcplugin.model.response.User;
+import com.github.gtcbaba.gtcplugin.model.dto.*;
+import com.github.gtcbaba.gtcplugin.model.response.*;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
+
+import java.util.List;
 
 /**
  * 码小保接口
@@ -31,7 +32,7 @@ public interface MaXiaoBaoApi {
     @POST("user/login")
     Call<BaseResponse<User>> userLogin(
             @Body UserLoginRequest userLoginRequest
-            );
+    );
 
     /**
      * 用户退出登录
@@ -43,6 +44,36 @@ public interface MaXiaoBaoApi {
     Call<BaseResponse<Page<Task>>> getTaskList(
             @Body TaskTypeQueryRequest queryRequest
     );
+
+    @GET("task/apps")
+    Call<BaseResponse<List<App>>> listAppsUndercodeRepositoryId(
+           @Query("codeRepositoryId") long codeRepositoryId
+    );
+
+    @GET("branch/app/list")
+    Call<BaseResponse<List<Branch>>> listBranchesUnderAppId(
+            @Query("appId") long appId
+    );
+
+    @POST("branch/my")
+    Call<BaseResponse<List<BranchVO>>> listMyBranchesUnderTaskId(
+            @Body BranchesSearchRequest branchesSearchRequest
+    );
+
+    @POST("branch/add")
+    Call<BaseResponse<Boolean>> addBranchesUnderApps(
+            @Body BranchesAddRequest branchesAddRequest
+    );
+
+    @POST("branch/add/link")
+    Call<BaseResponse<Boolean>> addLinksToBranches(
+            @Body BranchesAddLinkRequest branchesAddLinkRequest
+    );
+
+
+
+
+
 
 //    /**
 //     * 获取题库列表

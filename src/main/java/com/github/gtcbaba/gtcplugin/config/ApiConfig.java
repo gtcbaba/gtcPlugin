@@ -33,9 +33,9 @@ public class ApiConfig {
                 .addInterceptor(new LogInterceptor())
                 .addInterceptor(new ResponseInterceptor())
                 .build();
-        String mianShiYaBaseUrl = CommonConstant.API;
+        String maXiaoBaoBaseUrl = CommonConstant.API;
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(mianShiYaBaseUrl)
+                .baseUrl(maXiaoBaoBaseUrl)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();

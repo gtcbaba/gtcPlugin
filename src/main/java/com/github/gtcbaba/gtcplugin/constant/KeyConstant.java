@@ -16,6 +16,8 @@ public interface KeyConstant {
     String IDP = "idp";
     String CODE_TYPE_FIELD =  "codeType";
     String STATUS_FIELD =  "status";
+    String SCHEDULED_TIME_FIELD = "scheduledTime";
     String CODE_TYPE_PLACEHOLDER = "任务类型";
     String STATUS_PLACEHOLDER = "任务状态";
+    String SCHEDULED_TIME_PLACEHOLDER = "任务排期";
 }

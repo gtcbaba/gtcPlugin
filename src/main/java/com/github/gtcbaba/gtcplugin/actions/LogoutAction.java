@@ -87,6 +87,9 @@ public class LogoutAction extends AnAction implements DumbAware {
 
                 // 移除信息区域
                 mainPanel.remove(1);
+                // ？待定
+                mainPanel.revalidate();
+                mainPanel.repaint();
             });
         });
     }

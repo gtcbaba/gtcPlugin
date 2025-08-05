@@ -38,6 +38,11 @@ public class TaskTypeQueryRequest extends PageRequest implements Serializable {
     private Integer status;
 
     /**
+     * 任务排期 （如 今日/本周/本月/本季度/下季度）
+     */
+    private Integer scheduledTime;
+
+    /**
      * 关联用户id
      */
     private Long userId;

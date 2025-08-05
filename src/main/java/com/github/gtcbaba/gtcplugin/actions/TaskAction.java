@@ -13,6 +13,7 @@ import com.github.gtcbaba.gtcplugin.model.common.PageRequest;
 import com.github.gtcbaba.gtcplugin.model.dto.TaskTypeQueryRequest;
 import com.github.gtcbaba.gtcplugin.model.enums.CodeTypeEnum;
 import com.github.gtcbaba.gtcplugin.model.enums.DevelopStatusEnum;
+import com.github.gtcbaba.gtcplugin.model.enums.ScheduledTimeFactorEnum;
 import com.github.gtcbaba.gtcplugin.model.enums.TaskTypeEnum;
 import com.github.gtcbaba.gtcplugin.model.response.Task;
 import com.github.gtcbaba.gtcplugin.model.response.User;
@@ -73,15 +74,19 @@ public class TaskAction extends AnAction {
 
     final int initSelectedIndex = -2;
     // 分别用于维护 任务类型 和 任务状态 的最近选择状态
-    int[] comboBoxLastSelectedItem = {initSelectedIndex, initSelectedIndex};
+    int[] comboBoxLastSelectedItem = {initSelectedIndex, initSelectedIndex, initSelectedIndex};
     final int nullIndex = -1;
     final int codeTypeLastSelectedIndex = 0;
     final int statusLastSelectedIndex = 1;
+    final int scheduledTimeLastSelectedIndex = 2;
     private final List<ComboBoxItem> codeTypeComboBoxItems = Arrays.stream(CodeTypeEnum.values())
             .map(item -> new ComboBoxItem(String.valueOf(item.getValue()), item.getCodeType()))
             .collect(Collectors.toList());
     private final List<ComboBoxItem> statusComboBoxItems = Arrays.stream(DevelopStatusEnum.values())
             .map(item -> new ComboBoxItem(String.valueOf(item.getValue()), item.getDevelopStatus()))
+            .collect(Collectors.toList());
+    private final List<ComboBoxItem> scheduledTimeFactorComboBoxItems = Arrays.stream(ScheduledTimeFactorEnum.values())
+            .map(item -> new ComboBoxItem(String.valueOf(item.getValue()), item.getScheduledTimeFactor()))
             .collect(Collectors.toList());
 
     private boolean firstResize = true;
@@ -317,10 +322,11 @@ public class TaskAction extends AnAction {
                     int selectedRow = tempTable.getSelectedRow();
                     if (selectedRow != -1) {
                         // 获取选中行的数据
+                        String taskId = (String) tempTable.getValueAt(selectedRow, 0);
                         String codeRepositoryId = (String) tempTable.getValueAt(selectedRow, 5);
                         String taskName = (String) tempTable.getValueAt(selectedRow, 1);
                         GitBranchManager gitBranchManager = new GitBranchManager();
-                        gitBranchManager.addGitTab(Long.valueOf(codeRepositoryId), taskName, project);
+                        gitBranchManager.addGitTab(Long.valueOf(codeRepositoryId), Long.valueOf(taskId), taskName, project);
                         // 打开包含该行数据的新选项卡
 //                        QuestionListManager questionListManager = new QuestionListManager();
 //                        questionListManager.addQuestionTab(Long.valueOf(id), project);
@@ -576,6 +582,9 @@ public class TaskAction extends AnAction {
         // 任务状态筛选框
         JComboBox<ComboBoxItem> statusComboBox = createCustomFilterBox(() -> statusComboBoxItems, statusLastSelectedIndex, KeyConstant.STATUS_FIELD, KeyConstant.STATUS_PLACEHOLDER);
         filterPanel.add(statusComboBox);
+        // 任务状态筛选框
+        JComboBox<ComboBoxItem> scheduledTimeFactorComboBox = createCustomFilterBox(() -> scheduledTimeFactorComboBoxItems, scheduledTimeLastSelectedIndex, KeyConstant.SCHEDULED_TIME_FIELD, KeyConstant.SCHEDULED_TIME_PLACEHOLDER);
+        filterPanel.add(scheduledTimeFactorComboBox);
 
         return filterPanel;
     }

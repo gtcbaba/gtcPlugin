@@ -154,6 +154,51 @@ public class PanelUtil {
         return table;
     }
 
+    public static JBTable createGitTablePanel(MTabModel tableModel, BiConsumer<JBTable, MouseEvent> consumer) {
+        // 创建表格
+        JBTable table = new JBTable(tableModel);
+        table.setFillsViewportHeight(true);
+
+        // 鼠标双击事件监听
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                if (mouseEvent.getClickCount() == 2) {
+                    consumer.accept(table, mouseEvent);
+                }
+            }
+        });
+
+        // 自定义单元格渲染器
+//        TableCellRenderer categoryRenderer = new DefaultTableCellRenderer() {
+//            @Override
+//            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//                if (value instanceof List<?>) {
+//                    List<?> list = (List<?>) value;
+//                    JBLabel jbLabel = new JBLabel();
+//                    jbLabel.setText(list.stream()
+//                            .map(Object::toString)
+//                            .collect(Collectors.joining("  ")));
+//                    jbLabel.setOpaque(true); // 确保背景颜色生效
+//                    jbLabel.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+//                    jbLabel.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
+//                    return jbLabel;
+//                }
+//                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+//            }
+//        };
+//        table.getColumnModel().getColumn(columnIndex).setCellRenderer(categoryRenderer);
+
+        // 设置列宽为0，使列存在但不可见
+        TableColumn column = table.getColumnModel().getColumn(4);
+        column.setMinWidth(0);
+        column.setMaxWidth(0);
+        column.setPreferredWidth(0);
+        table.setFillsViewportHeight(true);
+
+        return table;
+    }
+
     // 重置分页组件为第一页  并根据总数渲染页数  同时绑定点击上下页的事件
     public static void updatePaginationPanel(JBPanel<?> paginationPanel, long total, int[] currentPage, BiConsumer<Integer, Integer> loadPage) {
         paginationPanel.removeAll();

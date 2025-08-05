@@ -9,7 +9,6 @@ import com.github.gtcbaba.gtcplugin.config.ApiConfig;
 import com.github.gtcbaba.gtcplugin.config.GlobalState;
 import com.github.gtcbaba.gtcplugin.constant.CommonConstant;
 import com.github.gtcbaba.gtcplugin.constant.IconConstant;
-import com.github.gtcbaba.gtcplugin.constant.KeyConstant;
 import com.github.gtcbaba.gtcplugin.model.common.BaseResponse;
 import com.github.gtcbaba.gtcplugin.model.enums.ErrorCode;
 import com.github.gtcbaba.gtcplugin.model.response.User;
@@ -26,14 +25,10 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import static com.github.gtcbaba.gtcplugin.constant.KeyConstant.*;

@@ -12,6 +12,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 public class LoginDialog extends JDialog {
@@ -20,8 +22,6 @@ public class LoginDialog extends JDialog {
 
 
         private final Project project;
-        @Getter
-        private boolean isOK = false;
         private final JTextField usernameField;
         private final JPasswordField passwordField;
 
@@ -54,11 +54,25 @@ public class LoginDialog extends JDialog {
             add(panel, BorderLayout.CENTER);
             add(buttonPanel, BorderLayout.SOUTH);
 
+            // 绑定回车事件
+            passwordField.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        if (validateLogin()) {
+                            dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(LoginDialog.this, "用户名或密码错误", "登录失败", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+            });
+
+            // 点击登陆按钮事件
             loginButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (validateLogin()) {
-                        isOK = true;
                         dispose();
                     } else {
                         JOptionPane.showMessageDialog(LoginDialog.this, "用户名或密码错误", "登录失败", JOptionPane.ERROR_MESSAGE);
